@@ -1,0 +1,128 @@
+
+# количество клеток на каждой стороне
+pole_k = 3
+
+# решётка|поле
+pole = [1, 2, 3, 4, 5, 6, 7, 8, 9]
+
+HUMAN_VS_AI = '1'
+HUMAN_VS_HUMEN = '2'
+
+# игровое поле на экране
+def ris_pole():
+    print('_' * 4 * pole_k)
+    for i in range(pole_k):
+        print((' ' * 3 + '┃') * 3)
+        print('', pole[i * 3], '┃', pole[1 + i * 3], '┃', pole[2 + i * 3], '┃')
+        print(('_' * 3 + '┃') * 3)
+
+# ход
+def game_bot(index, char):
+    # функция хода игрока
+    if (index > 10 or index < 1 or pole[index - 1] in ('X', 'O')):
+        return False
+
+    pole[index - 1] = char
+    return True
+
+# победа
+def check_win(pole):
+    # проверка
+    win = False
+
+    win_combo = (
+        (0, 1, 2), (3, 4, 5), (6, 7, 8), # Горизонтальные линии
+        (0, 4, 8), (2, 4, 6),            # Диагональные линии
+        (0, 3, 6), (1, 4, 7), (2, 5, 8)  # Вертикальные линии
+    )
+
+    for bruh in win_combo:
+        if (pole[bruh[0]] == pole[bruh[1]] and pole[bruh[1]] == pole[bruh[2]] in ('X', 'O')):
+            win = pole[bruh[0]]
+
+
+    return win
+
+def ii_step(human, ai):
+    '''Искусственный Интеллект'''
+
+    # доступные шаги
+    ava_steps = [i - 1 for i in pole if type(i) == int]
+
+    # успешные шаги
+    win_steps = (4, 0, 2, 6, 8, 1, 3, 5, 7)
+
+
+    for char in (ai, human):
+        for pop in ava_steps:
+            # клонирование поля
+            pole_ai = pole[:]
+            pole_ai[pop] = ai
+            if (check_win(pole_ai) != False):
+                return pop
+    #если нету вариантов для победы
+    for pop in win_steps:
+        if(pop in ava_steps):
+            return pop
+
+    return False
+
+def next_player(player):
+    '''у какого игрока ход следующий'''
+    if (player == 'X'):
+        return 'O'
+
+    return 'X'
+
+# старт игры
+def start_pole(mode):
+
+    #Игрок
+    player = 'X'
+    ai_player = 'O'
+
+    #номер Хода
+    hod = 1
+    ris_pole()
+
+    while (hod < 10) and (check_win(pole) == False):
+        index = input('Ход игрока ' + player + '. Введите номер поля (0 - выход):')
+        if (index == '0'):
+            break
+
+        # если получилось сделать шаг
+        if (game_bot(int(index), player)):
+            print('Отличный ход!')
+
+            player = next_player(player)
+
+            # увеличение номера хода
+            hod += 1
+
+            if (mode == HUMAN_VS_AI):
+                ai_step = ii_step('X', 'O')
+                #если компьтер нашёл ход
+                if (type(ai_step) == int):
+                    # Ход компьтера
+                    pole[ai_step] = ai_player
+                    player = next_player(player)
+                    hod += 1
+
+            ris_pole()
+        else:
+            print('Неверный номер! Повторите!')
+
+    if (hod == 10):
+       print('Игра окончена. Ничья!')
+    elif check_win(pole) != False:
+        print(check_win(pole), 'Выиграл!')
+
+
+
+print('Добро пожаловать в Крестики-Нолики!')
+
+mode = 0
+while mode not in (HUMAN_VS_HUMEN, HUMAN_VS_AI):
+    mode = input("Выберите режим игры:\n1 - против компьютера\n2 - против человека\n Режим игры: ")
+
+start_pole(mode)
